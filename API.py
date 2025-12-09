@@ -1,7 +1,6 @@
 """
 Domain-Adaptive Stable Diffusion (DASD) - Python API Examples
-
-This file demonstrates how to use the DASD package programmatically.
+This file demonstrates how to use the DASD package.
 """
 
 from dasd import (
@@ -15,10 +14,7 @@ from dasd import (
     DomainClassifier,
 )
 
-# =============================================================================
 # 1. TRAINING
-# =============================================================================
-
 def train_dasd():
     """Train the DASD model from scratch."""
     # Initialize configuration
@@ -47,10 +43,7 @@ def train_dasd():
     return models, losses_log
 
 
-# =============================================================================
 # 2. INFERENCE (Basic)
-# =============================================================================
-
 def generate_with_domain_token():
     """Generate images using explicit domain tokens."""
     config = Config()
@@ -71,10 +64,7 @@ def generate_with_domain_token():
     return image
 
 
-# =============================================================================
 # 3. INFERENCE WITH AUTO-DOMAIN (Domain Classifier)
-# =============================================================================
-
 def generate_with_auto_domain():
     """Generate images with automatic domain detection.
 
@@ -104,10 +94,7 @@ def generate_with_auto_domain():
     return image
 
 
-# =============================================================================
 # 4. DOMAIN CLASSIFICATION (Without Generation)
-# =============================================================================
-
 def classify_prompts():
     """Classify prompts into domains without generating images.
 
@@ -135,10 +122,7 @@ def classify_prompts():
         print()
 
 
-# =============================================================================
 # 5. BATCH GENERATION
-# =============================================================================
-
 def batch_generate():
     """Generate multiple images with different prompts."""
     config = Config()
@@ -158,10 +142,7 @@ def batch_generate():
         image.save(f"batch_{domain}_{i}.png")
 
 
-# =============================================================================
 # 6. COMPARISON GENERATION
-# =============================================================================
-
 def generate_domain_comparison():
     """Generate the same prompt across all domains for comparison."""
     config = Config()
@@ -176,10 +157,7 @@ def generate_domain_comparison():
         result['image'].save(f"comparison_{result['domain']}.png")
 
 
-# =============================================================================
 # MAIN
-# =============================================================================
-
 if __name__ == "__main__":
     import sys
 
