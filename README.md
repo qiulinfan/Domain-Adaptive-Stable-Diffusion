@@ -6,8 +6,8 @@
 
 - Zhanhao Liu (zhanhaol@umich.edu)
 - Huanchen Jia (jhuanch@umich.edu)
-- Qiulin Fan (rynnefan@umich.edu)
 - Kunlong Zhang (kunlong@umich.edu)
+- Qiulin Fan (rynnefan@umich.edu)
 
 University of Michigan - EECS 442 Project
 
