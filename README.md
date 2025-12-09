@@ -31,26 +31,7 @@ Combined with domain-specific inference calibration, DASD achieves strong cross-
 
 ### Architecture
 
-```
-                        ┌───────────────────────────────────────────┐
-                        │           CLIP Text Encoder               │
-                        │    + Domain Tokens (<satellite>, <xray>)  │
-                        └───────────────────────────────────────────┘
-                                         │ (cross-attn conditioning)
-                                         ▼
-┌────────────────────────────────────────────────────────────────────────────────────┐
-│                           Stable Diffusion UNet                                    │
-│                                                                                    │
-│   ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐               │
-│   │   Down Blocks   │───▶│    Mid Block    │───▶│    Up Blocks    │               │
-│   │   + LoRA        │    │    + LoRA       │    │    + LoRA       │               │
-│   └─────────────────┘    └────────┬────────┘    └─────────────────┘               │
-│                                   │                                                │
-│                                   ▼                                                │
-│                          MMD Alignment Loss                                        │
-│                     (source ↔ target features)                                     │
-└────────────────────────────────────────────────────────────────────────────────────┘
-```
+<img src="./figures/diagram.png" alt="diagram" style="zoom:50%;" />
 
 ### Key Components
 
@@ -74,6 +55,8 @@ W_{unet} = W_0 + \Delta W_{LoRA}
 $$
 
 Where $W_0$ represents the frozen pretrained weights and $\Delta W_{LoRA}$ captures domain-specific adaptations.
+
+<img src="./figures/diagram2.png" alt="diagram2" style="zoom: 50%;" />
 
 #### 2. Text-Side Adaptation (Domain Tokens)
 
@@ -206,44 +189,6 @@ pipeline = load_trained_pipeline("dasd_output/checkpoint-final", config)
 image, domain, settings = pipeline.generate("a chest x-ray showing lungs <xray>")
 ```
 
-### Domain Classifier (Optional)
-
-For users who don't know about domain tokens, DASD provides an optional domain classifier that automatically detects the appropriate domain from the prompt and injects the corresponding token.
-
-**How it works:**
-1. Computes CLIP embedding of the user's prompt
-2. Compares with learned domain token embeddings using cosine similarity
-3. Selects the best matching domain
-4. Automatically injects the domain token into the prompt
-
-```python
-from dasd import load_trained_pipeline, Config
-
-pipeline = load_trained_pipeline("dasd_output/checkpoint-final", Config())
-
-# Method 1: Use auto_domain flag
-image, domain, settings = pipeline.generate(
-    "chest scan showing healthy lungs",
-    auto_domain=True  # Automatically detects xray domain
-)
-
-# Method 2: Use generate_with_auto_domain
-image, domain, settings, modified_prompt = pipeline.generate_with_auto_domain(
-    "aerial view of airport"  # Automatically detects satellite domain
-)
-
-# Method 3: Just classify without generating
-result = pipeline.classify_prompt("medical radiograph")
-print(f"Best domain: {result['best_domain']}")  # xray
-print(f"Confidence: {result['best_score']:.4f}")
-print(f"Suggested prompt: {result['suggested_prompt']}")
-```
-
-**Use cases:**
-- Domain-specific applications where users shouldn't need to know about tokens
-- Interactive systems that auto-detect user intent
-- Batch processing of mixed-domain prompts
-
 ### Configuration
 
 Key configuration options in `dasd/config.py`:
@@ -296,15 +241,13 @@ Domain-specific generation parameters are automatically applied:
 
 ### CLIP-Score Evaluation
 
-We evaluated text-image alignment using CLIP similarity scores across 20 prompts per domain:
-
-| Domain    | Base SD         | DASD            |
-|-----------|-----------------|-----------------|
-| Satellite | 0.2877 +/- 0.013 | **0.3287 +/- 0.017** |
-| X-ray     | 0.2840 +/- 0.016 | **0.3288 +/- 0.015** |
-| Overall   | 0.2858          | **0.3288**      |
+<img src="./figures/CLIP.png" alt="CLIP" style="zoom:50%;" />
 
 DASD consistently outperforms the baseline Stable Diffusion model across both domains, demonstrating improved semantic alignment between generated images and text prompts.
+
+Here are some examples of qualitative comparisons between base Stable Diffusion(col 1 and 3) with DASD(col 2 and 4)  on satellite and X-ray domains.
+
+<img src="./figures/q1.jpg" alt="q1" style="zoom:50%;" />
 
 ---
 
@@ -317,7 +260,6 @@ Domain-Adaptive-Stable-Diffusion/
 ├── example_running.txt     # Command line examples
 ├── requirements.txt        # Python dependencies
 ├── README.md               # This file
-│
 ├── dasd/                   # Main package
 │   ├── __init__.py         # Package exports
 │   ├── config.py           # Configuration class
@@ -328,44 +270,7 @@ Domain-Adaptive-Stable-Diffusion/
 │   ├── classifier.py       # Domain classifier (auto-detection)
 │   ├── train.py            # Training loop
 │   └── evaluate.py         # CLIP-Score evaluation
-│
-├── Report/                 # Paper and figures
-│   ├── main.tex            # LaTeX paper
-│   ├── reference.bib       # Bibliography
-│   ├── diagram.png         # Architecture diagrams
-│   ├── diagram1.png
-│   ├── diagram2.png
-│   ├── pipeline.png
-│   ├── CLIP.png            # Results visualization
-│   ├── q1.jpg              # Qualitative results
-│   └── q2.jpg
-│
-└── 流程.md                  # Development notes (Chinese)
 ```
-
----
-
-## Citation
-
-If you find this work useful, please cite:
-
-```bibtex
-@article{liu2024dasd,
-  title={Domain-Adaptive Stable Diffusion: Parameter-Efficient Adaptation of Latent Diffusion Models for Cross-Domain Image Synthesis},
-  author={Liu, Zhanhao and Jia, Huanchen and Fan, Qiulin and Zhang, Kunlong},
-  journal={EECS 442 Course Project, University of Michigan},
-  year={2024}
-}
-```
-
----
-
-## References
-
-1. Rombach, R., et al. "High-Resolution Image Synthesis with Latent Diffusion Models." CVPR 2022.
-2. Hu, E. J., et al. "LoRA: Low-Rank Adaptation of Large Language Models." ICLR 2022.
-
----
 
 ## Acknowledgments
 
